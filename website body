@@ -1,0 +1,213 @@
+import React, { useEffect, useState } from "react";
+import { Helmet } from "react-helmet";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+
+export default function LearningBalloonsWebsite() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [viewDashboard, setViewDashboard] = useState(false);
+  const [onLanding, setOnLanding] = useState(true);
+  const [completedLessons, setCompletedLessons] = useState([]);
+  const [favoriteLessons, setFavoriteLessons] = useState([]);
+  const [userName, setUserName] = useState("Guest");
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" });
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID";
+    script.async = true;
+    document.body.appendChild(script);
+
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'GA_MEASUREMENT_ID');
+  }, []);
+
+  const lessons = [
+    { id: 1, title: "Balloon Basics", description: "Learn about balloon types, sizes, and basic safety tips.", video: "https://www.youtube.com/embed/example1" },
+    { id: 2, title: "Simple Balloon Garland", description: "Step-by-step tutorial to create your first balloon garland.", video: "https://www.youtube.com/embed/example2" },
+    { id: 3, title: "Balloon Columns & Arches", description: "Techniques to build professional-looking columns and arches.", video: "https://www.youtube.com/embed/example3" },
+    { id: 4, title: "Advanced Organic Designs", description: "Learn to create complex organic balloon structures.", video: "https://www.youtube.com/embed/example4" },
+    { id: 5, title: "Event Installation Tips", description: "How to set up balloons at venues safely and efficiently.", video: "https://www.youtube.com/embed/example5" },
+  ];
+
+  const toggleComplete = (lessonId) => {
+    setCompletedLessons((prev) =>
+      prev.includes(lessonId)
+        ? prev.filter((id) => id !== lessonId)
+        : [...prev, lessonId]
+    );
+  };
+
+  const toggleFavorite = (lessonId) => {
+    setFavoriteLessons((prev) =>
+      prev.includes(lessonId)
+        ? prev.filter((id) => id !== lessonId)
+        : [...prev, lessonId]
+    );
+  };
+
+  const handleProfilePictureChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => setProfilePicture(e.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleContactChange = (e) => {
+    const { name, value } = e.target;
+    setContactForm({ ...contactForm, [name]: value });
+  };
+
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    alert(`Thank you ${contactForm.name}, we have received your message.`);
+    setContactForm({ name: "", email: "", message: "" });
+  };
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    alert(`Thank you for subscribing with ${newsletterEmail}`);
+    setNewsletterEmail("");
+  };
+
+  const Dashboard = () => (
+    <div className="p-8 bg-white text-black">
+      <div className="flex items-center space-x-6 mb-6">
+        <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+          {profilePicture ? (
+            <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            <p className="text-gray-500 flex items-center justify-center h-full">No Photo</p>
+          )}
+        </div>
+        <div>
+          <h2 className="text-3xl font-bold text-pink-600">{userName}'s Dashboard</h2>
+          <label className="block mt-2">
+            <span className="text-sm text-black">Upload Profile Picture</span>
+            <input type="file" accept="image/*" onChange={handleProfilePictureChange} className="mt-1" />
+          </label>
+        </div>
+      </div>
+      <p className="mb-6 text-lg">You have completed {completedLessons.length} out of {lessons.length} lessons.</p>
+      <h3 className="text-2xl font-semibold text-pink-600 mb-4">Completed Lessons</h3>
+      <ul className="list-disc pl-6 mb-6">
+        {completedLessons.length > 0 ? completedLessons.map((lessonId) => {
+          const lesson = lessons.find((l) => l.id === lessonId);
+          return <li key={lessonId} className="text-green-600 font-semibold">{lesson.title}</li>;
+        }) : <li className="text-gray-600">No lessons completed yet.</li>}
+      </ul>
+      <h3 className="text-2xl font-semibold text-pink-600 mb-4">Favorite Lessons</h3>
+      <ul className="list-disc pl-6 mb-6">
+        {favoriteLessons.length > 0 ? favoriteLessons.map((lessonId) => {
+          const lesson = lessons.find((l) => l.id === lessonId);
+          return <li key={lessonId} className="text-yellow-600 font-semibold">{lesson.title}</li>;
+        }) : <li className="text-gray-600">No favorite lessons selected yet.</li>}
+      </ul>
+      <Button onClick={() => setViewDashboard(false)} className="bg-pink-600 text-white hover:bg-pink-700">Back to Lessons</Button>
+    </div>
+  );
+
+  const LessonsPage = () => (
+    <main className="p-8 bg-white text-black grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {lessons.map((lesson, index) => (
+        <motion.div key={lesson.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: index * 0.2 }}>
+          <Card className="rounded-2xl shadow-lg hover:shadow-xl transition border-pink-600">
+            <CardContent className="p-6 flex flex-col justify-between h-full">
+              <h2 className="text-xl font-bold text-pink-600 mb-4">{lesson.title}</h2>
+              <p className="mb-6">{lesson.description}</p>
+              <div className="aspect-w-16 aspect-h-9 mb-4">
+                <iframe
+                  src={lesson.video}
+                  title={lesson.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full rounded-lg"
+                ></iframe>
+              </div>
+              <div className="space-y-2">
+                <Button onClick={() => toggleComplete(lesson.id)} className="w-full bg-pink-600 text-white hover:bg-pink-700">
+                  {completedLessons.includes(lesson.id) ? "Mark as Incomplete" : "Mark as Complete"}
+                </Button>
+                <Button onClick={() => toggleFavorite(lesson.id)} className="w-full border border-pink-600 text-pink-600 hover:bg-pink-50" variant="outline">
+                  {favoriteLessons.includes(lesson.id) ? "Remove from Favorites" : "Add to Favorites"}
+                </Button>
+              </div>
+              {completedLessons.includes(lesson.id) && (
+                <p className="text-green-600 mt-2 font-semibold">Completed</p>
+              )}
+              {favoriteLessons.includes(lesson.id) && (
+                <p className="text-yellow-600 font-semibold">Favorited</p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      ))}
+    </main>
+  );
+
+  const LandingPage = () => (
+    <div className="bg-white">
+      <Helmet>
+        <title>Learning Balloons with IBX Balloons & Company</title>
+        <meta name="description" content="Learn professional balloon decoration techniques with step-by-step video tutorials, progress tracking, and a personal dashboard." />
+        <meta name="keywords" content="balloon art, balloon garlands, balloon design course, balloon tutorials" />
+        <meta property="og:title" content="Learning Balloons with IBX Balloons & Company" />
+        <meta property="og:description" content="Master balloon design with expert-led lessons and tutorials." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://learningballoons.ibx.com" />
+        <meta property="og:image" content="https://learningballoons.ibx.com/og-image.jpg" />
+      </Helmet>
+      <div className="p-12 text-center min-h-screen flex flex-col justify-center">
+        <motion.h1 initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} className="text-5xl font-bold text-pink-600 mb-6">Welcome to Learning Balloons with IBX Balloons & Company</motion.h1>
+        <p className="text-lg text-black mb-8 max-w-2xl mx-auto">Learn how to create stunning balloon designs from scratch with step-by-step lessons, video tutorials, and expert tips. Whether you’re just starting or looking to take your balloon art to the next level, we’ve got you covered!</p>
+        <Button onClick={() => setOnLanding(false)} className="px-8 py-4 text-lg bg-pink-600 text-white hover:bg-pink-700">Explore Lessons</Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-white text-black">
+      <header className="bg-pink-600 text-white p-6 shadow-lg flex flex-col md:flex-row justify-between items-center">
+        <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-bold text-center md:text-left">
+          Learning Balloons with IBX Balloons & Company
+        </motion.h1>
+        <div className="mt-4 md:mt-0 space-x-2">
+          {loggedIn && !onLanding && (
+            <Button onClick={() => setViewDashboard(!viewDashboard)} className="bg-black text-white hover:bg-gray-800">
+              {viewDashboard ? "View Lessons" : "Dashboard"}
+            </Button>
+          )}
+          {loggedIn ? (
+            <Button onClick={() => { setLoggedIn(false); setViewDashboard(false); setUserName("Guest"); setProfilePicture(null); }} className="bg-black text-white hover:bg-gray-800">Logout</Button>
+          ) : (
+            <Button onClick={() => { setLoggedIn(true); setUserName("Student"); setOnLanding(false); }} className="bg-black text-white hover:bg-gray-800">Sign Up / Login</Button>
+          )}
+        </div>
+      </header>
+
+      {onLanding ? (
+        <LandingPage />
+      ) : loggedIn ? (
+        viewDashboard ? <Dashboard /> : <LessonsPage />
+      ) : (
+        <div className="p-12 text-center">
+          <h2 className="text-2xl font-semibold text-pink-600 mb-4">Create an Account or Log In</h2>
+          <p className="text-black mb-6">Sign up to unlock all balloon lessons with step-by-step video tutorials, progress tracking, favorites, profile pictures, and your personal dashboard.</p>
+          <Button onClick={() => { setLoggedIn(true); setUserName("Student"); }} className="bg-pink-600 text-white hover:bg-pink-700">Get Started</Button>
+        </div>
+      )}
+
+      <footer className="bg-black text-white text-center py-6 mt-8">
+        <p>© {new Date().getFullYear()} Learning Balloons with IBX Balloons & Company. All Rights Reserved.</p>
+      </footer>
+    </div>
+  );
+}
